@@ -226,7 +226,6 @@ function screenshot() {
     Print -D "Additional arguments: $*\n"
 
     grim -g "$GEOMETRY" -t "$FILETYPE" "$@" "$CAPTURE_PATH"
-	export LAST_ACTION="screenshot"
 }
 
 function record_start() {
@@ -263,7 +262,6 @@ function record_start() {
 
     # Once wf-recorder exits, we can remove the PID file
     rm "$REC_PID_PATH" 2>/dev/null
-	export LAST_ACTION="record"
     # And return the exit code from the recording command unless it's
     # 130 (SIGINT), which is expected.
     [ $exit_code -eq 130 ] || return $exit_code
@@ -610,9 +608,14 @@ function copy_capture() {
     Print -I "Copying capture to clipboard (saved at '$CAPTURE_COPY_PATH')\n"
 
     cp -f "$CAPTURE_PATH" "$CAPTURE_COPY_PATH"
-	echo "变量:$LAST_ACTION"
-	[ "$LAST_ACTION" = "record" ] && wl-copy --type 'text/uri-list' "file://$CAPTURE_COPY_PATH"
-	[ "$LAST_ACTION" = "screenshot" ] && wl-copy --type 'image/png' <$CAPTURE_COPY_PATH
+	case "$COMMAND" in
+		"record"*)
+			wl-copy --type 'text/uri-list' "file://$CAPTURE_COPY_PATH"
+			;;
+		"screenshot")
+			wl-copy <$CAPTURE_COPY_PATH
+			;;
+	esac
 }
 
 # function edit_capture() {
